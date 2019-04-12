@@ -1,3 +1,10 @@
+import * as mongoose from 'mongoose';
+
+import {
+  DEFAULT_DB_CONNECTION,
+  MONGOOSE_CONNECTION_NAME,
+  MONGOOSE_MODULE_OPTIONS,
+} from './mongoose.constants';
 import {
   DynamicModule,
   Global,
@@ -5,20 +12,15 @@ import {
   Module,
   Provider,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
-import * as mongoose from 'mongoose';
-import { defer } from 'rxjs';
-import { getConnectionToken, handleRetry } from './common/mongoose.utils';
 import {
   MongooseModuleAsyncOptions,
   MongooseModuleOptions,
   MongooseOptionsFactory,
 } from './interfaces/mongoose-options.interface';
-import {
-  DEFAULT_DB_CONNECTION,
-  MONGOOSE_CONNECTION_NAME,
-  MONGOOSE_MODULE_OPTIONS,
-} from './mongoose.constants';
+import { getConnectionToken, handleRetry } from './common/mongoose.utils';
+
+import { ModuleRef } from '@nestjs/core';
+import { defer } from 'rxjs';
 
 @Global()
 @Module({})
@@ -51,7 +53,7 @@ export class MongooseCoreModule {
       provide: mongooseConnectionName,
       useFactory: async (): Promise<any> =>
         await defer(async () =>
-          mongoose.createConnection(uri, mongooseOptions as any),
+          mongoose.connect(uri, mongooseOptions as any),
         )
           .pipe(handleRetry(retryAttempts, retryDelay))
           .toPromise(),
@@ -87,7 +89,7 @@ export class MongooseCoreModule {
         } = mongooseModuleOptions;
 
         return await defer(async () =>
-          mongoose.createConnection(
+          mongoose.connect(
             mongooseModuleOptions.uri,
             mongooseOptions as any,
           ),
